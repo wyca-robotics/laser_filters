@@ -1,0 +1,7 @@
+scan_filter_chain:
+- name: wyca_shadow_filter
+  type: laser_filters/LaserScanWycaShadowFilter
+  params:
+    window_size: 3
+    angular_distance_threshold: 0.5
+    range_percentage: 0.10

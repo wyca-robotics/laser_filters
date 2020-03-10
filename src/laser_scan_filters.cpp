@@ -41,6 +41,7 @@
 #include "laser_filters/scan_blob_filter.h"
 #include "laser_filters/scan_mean_shadow_filter.h"
 #include "laser_filters/scan_std_deviation_filter.h"
+#include "laser_filters/wyca_shadow_filter.h"
 #include "sensor_msgs/LaserScan.h"
 #include "filters/filter_base.h"
 
@@ -61,3 +62,4 @@ PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanMaskFilter, filters::FilterBase<s
 PLUGINLIB_EXPORT_CLASS(laser_filters::ScanBlobFilter, filters::FilterBase<sensor_msgs::LaserScan>)
 PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanMeanShadowFilter, filters::FilterBase<sensor_msgs::LaserScan>)
 PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanStdDeviationFilter, filters::FilterBase<sensor_msgs::LaserScan>)
+PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanWycaShadowFilter, filters::FilterBase<sensor_msgs::LaserScan>)
