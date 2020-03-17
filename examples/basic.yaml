@@ -4,4 +4,6 @@ scan_filter_chain:
   params:
     window_size: 3
     angular_distance_threshold: 0.5
-    range_percentage: 0.10
+    range_percentage: 0.20
+    min_threshold: 0.75
+    max_threshold: 1.25

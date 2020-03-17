@@ -15,6 +15,7 @@ public:
   int _window_size;
   double _angular_distance_threshold, _range_percentage;
   std::shared_ptr<ddynamic_reconfigure::DDynamicReconfigure> _ddr;
+  double _min_threshold, _max_threshold;
 
 
   bool configure()
@@ -26,10 +27,14 @@ public:
     getParam("window_size", _window_size);
     getParam("angular_distance_threshold", _angular_distance_threshold);
     getParam("range_percentage", _range_percentage);
+    getParam("max_threshold", _max_threshold);
+    getParam("min_threshold", _min_threshold);
 
     _ddr->registerVariable<int>("Window_size", &_window_size, "Window size", 0, 20);
     _ddr->registerVariable<double>("Angular_distance_threshold", &_angular_distance_threshold, "Angular distance threshold", 0.0, 0.05);
     _ddr->registerVariable<double>("Range_percentage", &_range_percentage, "Normal threshold", 0.0, 1.0);
+    _ddr->registerVariable<double>("Min_threshold", &_min_threshold, "Min threshold", 0.0, 10.0);
+    _ddr->registerVariable<double>("Max_threshold", &_max_threshold, "Max threshold", 0.0, 10.0);
     _ddr->publishServicesTopics();
 
     return true;
@@ -67,6 +72,7 @@ public:
 
     double first_x, first_y;
     double last_x, last_y;
+    double point_x=0, point_y=0;
 
     double pts_deleted=0;
 
@@ -80,29 +86,37 @@ public:
 
       std::vector<double> current_window(input_scan.ranges.begin() + i, input_scan.ranges.begin() + i + _window_size + 1);
 
-      if(checkPointDirection(current_window)) {// && checkPointRange(current_window)) {
+      if(checkPointRange(current_window)) {// && checkPointDirection(current_window)) {
         first_x = input_scan.ranges[i] * cos(input_scan.angle_min + i * input_scan.angle_increment);
         first_y = input_scan.ranges[i] * sin(input_scan.angle_min + i * input_scan.angle_increment);
 
         last_x = input_scan.ranges[i + _window_size] * cos(input_scan.angle_min + (i + _window_size) * input_scan.angle_increment);
         last_y = input_scan.ranges[i + _window_size] * sin(input_scan.angle_min + (i + _window_size) * input_scan.angle_increment);
 
-        point_vec = std::make_pair<double, double>(last_y - first_y, last_x - first_x);
-        lidar_vec = std::make_pair<double, double>(last_y - 0, last_x - 0);
+        point_vec = std::make_pair<double, double>(last_x - first_x, last_y - first_y);
 
-        x_div = abs(point_vec.second/lidar_vec.second);
-        y_div = abs(point_vec.first/lidar_vec.first);
+        for(int j = 0 ; j < _window_size ; j++) {
+          point_x += input_scan.ranges[i + j] * cos(input_scan.angle_min + (i + j) * input_scan.angle_increment);
+          point_y += input_scan.ranges[i + j] * sin(input_scan.angle_min + (i + j) * input_scan.angle_increment);
+        }
+
+        point_x /= _window_size;
+        point_y /= _window_size;
+
+        lidar_vec = std::make_pair<double, double>(point_x - 0, point_y - 0);
+
+
+        x_div = abs(point_vec.first/lidar_vec.first);
+        y_div = abs(point_vec.second/lidar_vec.second);
 
 
 //        ROS_INFO_STREAM("div : " << x_div/y_div);
-        if((abs(x_div / y_div) > 0.0) && (abs(x_div / y_div) < 10.0)) {
+        if((abs(x_div / y_div) > _min_threshold) && (abs(x_div / y_div) < _max_threshold)) {
           for(int j = 0 ; j < _window_size ; j++) {
             pts_deleted++;
             filtered_scan.ranges[i+j] = filtered_scan.range_max + 1;
             filtered_scan.intensities[i+j] = 0;
           }
-        } else {
-          ROS_INFO_STREAM("Div : " << abs(x_div / y_div));
         }
       }
     }
