@@ -16,12 +16,14 @@ public:
   double _angular_distance_threshold, _range_percentage;
   std::shared_ptr<ddynamic_reconfigure::DDynamicReconfigure> _ddr;
   double _min_threshold, _max_threshold;
+  ros::Publisher deleted_scan_pub;
 
 
   bool configure()
   {
     ros::NodeHandle nh_("~/WycaShadowFilter");
 
+    deleted_scan_pub = nh_.advertise<sensor_msgs::LaserScan>("scan_deleted", 10);
     _ddr = std::make_shared<ddynamic_reconfigure::DDynamicReconfigure>(nh_);
 
     getParam("window_size", _window_size);
@@ -80,7 +82,10 @@ public:
 
     double x_div, y_div;
 
+    sensor_msgs::LaserScan deleted_scan;
+
     filtered_scan = input_scan;
+    deleted_scan = input_scan;
 
     for(int i = 0 ; i < input_scan.ranges.size() ; i+=_window_size) {
 
@@ -117,11 +122,17 @@ public:
             filtered_scan.ranges[i+j] = filtered_scan.range_max + 1;
             filtered_scan.intensities[i+j] = 0;
           }
+        } else {
+          for(int j = 0 ; j < _window_size ; j++) {
+            deleted_scan.ranges[i+j] = deleted_scan.range_max + 1;
+            deleted_scan.intensities[i+j] = 0;
+          }
         }
       }
     }
 
-//    ROS_INFO_STREAM("Points taken away : " << pts_deleted);
+    deleted_scan_pub.publish(deleted_scan);
+//    ROS_INFO_STREAM("Points deleted : " << pts_deleted);
     return true;
   }
 };
