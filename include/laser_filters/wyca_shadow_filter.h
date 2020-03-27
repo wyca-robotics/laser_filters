@@ -86,12 +86,16 @@ public:
 
     filtered_scan = input_scan;
     deleted_scan = input_scan;
+    deleted_scan.ranges.clear();
+    deleted_scan.ranges.clear();
+
+    int if_in=0, else_in=0;
 
     for(int i = 0 ; i < input_scan.ranges.size() ; i+=_window_size) {
 
       std::vector<double> current_window(input_scan.ranges.begin() + i, input_scan.ranges.begin() + i + _window_size + 1);
 
-      if(checkPointRange(current_window)) {// && checkPointDirection(current_window)) {
+      if(checkPointRange(current_window)) { // && checkPointDirection(current_window)) {
         first_x = input_scan.ranges[i] * cos(input_scan.angle_min + i * input_scan.angle_increment);
         first_y = input_scan.ranges[i] * sin(input_scan.angle_min + i * input_scan.angle_increment);
 
@@ -118,21 +122,30 @@ public:
 //        ROS_INFO_STREAM("div : " << x_div/y_div);
         if((abs(x_div / y_div) > _min_threshold) && (abs(x_div / y_div) < _max_threshold)) {
           for(int j = 0 ; j < _window_size ; j++) {
-            pts_deleted++;
+            if_in++;
+            deleted_scan.ranges.push_back(filtered_scan.ranges[i+j]);
+            deleted_scan.intensities.push_back(filtered_scan.intensities[i+j]);
             filtered_scan.ranges[i+j] = filtered_scan.range_max + 1;
             filtered_scan.intensities[i+j] = 0;
           }
         } else {
           for(int j = 0 ; j < _window_size ; j++) {
-            deleted_scan.ranges[i+j] = deleted_scan.range_max + 1;
-            deleted_scan.intensities[i+j] = 0;
+//            else_in++;
+            deleted_scan.ranges.push_back(deleted_scan.range_max + 1);
+            deleted_scan.intensities.push_back(0);
           }
+        }
+      } else {
+        for(int j = 0 ; j < _window_size ; j++) {
+//          else_in++;
+          deleted_scan.ranges.push_back(deleted_scan.range_max + 1);
+          deleted_scan.intensities.push_back(0);
         }
       }
     }
 
+//    ROS_INFO_STREAM("If " << if_in << ", else " << else_in);
     deleted_scan_pub.publish(deleted_scan);
-//    ROS_INFO_STREAM("Points deleted : " << pts_deleted);
     return true;
   }
 };
