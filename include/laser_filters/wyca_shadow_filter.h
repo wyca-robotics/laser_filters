@@ -18,6 +18,7 @@ public:
   double _min_threshold, _max_threshold;
   ros::Publisher deleted_scan_pub;
 
+  bool _use_range, _use_direction;
 
   bool configure()
   {
@@ -31,12 +32,16 @@ public:
     getParam("range_percentage", _range_percentage);
     getParam("max_threshold", _max_threshold);
     getParam("min_threshold", _min_threshold);
+    getParam("use_range", _use_range);
+    getParam("use_direction", _use_direction);
 
     _ddr->registerVariable<int>("Window_size", &_window_size, "Window size", 0, 20);
     _ddr->registerVariable<double>("Angular_distance_threshold", &_angular_distance_threshold, "Angular distance threshold", 0.0, 0.05);
     _ddr->registerVariable<double>("Range_percentage", &_range_percentage, "Normal threshold", 0.0, 1.0);
     _ddr->registerVariable<double>("Min_threshold", &_min_threshold, "Min threshold", 0.0, 10.0);
     _ddr->registerVariable<double>("Max_threshold", &_max_threshold, "Max threshold", 0.0, 10.0);
+    _ddr->registerVariable<bool>("Use_range", &_use_range, "Use range conditon");
+    _ddr->registerVariable<bool>("Use_direction", &_use_direction, "Use direction condition");
     _ddr->publishServicesTopics();
 
     return true;
@@ -95,7 +100,9 @@ public:
 
       std::vector<double> current_window(input_scan.ranges.begin() + i, input_scan.ranges.begin() + i + _window_size + 1);
 
-      if(checkPointRange(current_window)) { // && checkPointDirection(current_window)) {
+      if(((checkPointRange(current_window)) && _use_range && checkPointDirection(current_window) && _use_direction) ||
+         (checkPointRange(current_window) && _use_range && !_use_direction) ||
+         (checkPointDirection(current_window) && _use_direction && !_use_range)) {
         first_x = input_scan.ranges[i] * cos(input_scan.angle_min + i * input_scan.angle_increment);
         first_y = input_scan.ranges[i] * sin(input_scan.angle_min + i * input_scan.angle_increment);
 
