@@ -6,11 +6,15 @@ project(laser_filters)
 ##############################################################################
 
 set(THIS_PACKAGE_ROS_DEPS sensor_msgs roscpp tf filters message_filters
-  laser_geometry pluginlib angles ddynamic_reconfigure)
+  laser_geometry pluginlib angles ddynamic_reconfigure
+  pcl_ros
+  pcl_conversions)
 
 find_package(catkin REQUIRED COMPONENTS ${THIS_PACKAGE_ROS_DEPS})
 find_package(Boost REQUIRED COMPONENTS system)
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+find_package(PCL REQUIRED COMPONENTS io common visualization)
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS})
 
 generate_dynamic_reconfigure_options(
     config/angular_bounds_filter.cfg
@@ -43,10 +47,12 @@ add_library(pointcloud_filters src/pointcloud_filters.cpp)
 target_link_libraries(pointcloud_filters ${catkin_LIBRARIES})
 
 add_library(laser_scan_filters src/laser_scan_filters.cpp src/median_filter.cpp src/array_filter.cpp src/box_filter.cpp)
-target_link_libraries(laser_scan_filters ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(laser_scan_filters ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES})
 
 add_executable(generic_laser_filter_node src/generic_laser_filter_node.cpp)
 target_link_libraries(generic_laser_filter_node ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_definitions(${PCL_DEFINITIONS})
 
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest)
