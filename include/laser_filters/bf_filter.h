@@ -36,7 +36,14 @@ namespace laser_filters {
     double _sigmaI, _sigmaS;
     double distance_threshold;
     int _nb_check_point;
-    double _radius;
+    double _radius, _resolution;
+    std::string _filter_type;
+    int _K;
+    std::map<std::string, std::string> enum_map = {{"Normal", "Normal"},
+                                                   {"OctreeRadius", "OctreeRadius"},
+                                                   {"OctreeNearest", "OctreeNearest"},
+                                                   {"OctreeVoxel", "OctreeVoxel"},};
+
 
     std::shared_ptr<ddynamic_reconfigure::DDynamicReconfigure> _ddr;
     bool configure() {
@@ -44,15 +51,21 @@ namespace laser_filters {
       _ddr = std::make_shared<ddynamic_reconfigure::DDynamicReconfigure>(nh_);
 
 
-      getParam("sigmaI", _sigmaI);
-      getParam("sigmaS", _sigmaS);
-      getParam("nbCheckPoint", _nb_check_point);
-      getParam("radius", _radius);
+      nh_.param("sigmaI", _sigmaI, 3.0);
+      nh_.param("sigmaS", _sigmaS, 0.5);
+      nh_.param("nbCheckPoint", _nb_check_point, 10);
+      nh_.param("radius", _radius, 0.05);
+      nh_.param("filter_type", _filter_type, std::string("OctreeNearest"));
+      nh_.param("K", _K, 50);
+      nh_.param("resolution", _resolution, 0.05);
 
       _ddr->registerVariable<double>("SigmaI", &_sigmaI, "sigmaI", 0, 10);
       _ddr->registerVariable<double>("SigmaS", &_sigmaS, "sigmaS", 0, 10);
       _ddr->registerVariable<double>("Radius", &_radius, "radius", 0, 1);
       _ddr->registerVariable<int>("nbCheckPoint", &_nb_check_point, "nbCheckPoint", 0, 100);
+      _ddr->registerVariable<int>("K", &_K, "K", 0, 20);
+      _ddr->registerVariable<int>("resolution", &_K, "Resolution", 0, 1.0);
+      _ddr->registerEnumVariable<std::string>("filter_type", &_filter_type,"param description", enum_map);
 
       _ddr->publishServicesTopics();
 
@@ -77,7 +90,7 @@ namespace laser_filters {
       return (j + _nb_check_point < size) ? j + _nb_check_point : size;
     }
 
-    sensor_msgs::LaserScan bilateralFilterOctree(sensor_msgs::LaserScan input_scan) {
+    sensor_msgs::LaserScan bilateralFilterOctreeRadius(sensor_msgs::LaserScan input_scan) {
       pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud(new pcl::PointCloud<pcl::PointXYZ>);
       // Populate point cloud with LaserScan data
       for(int i = 0; i < input_scan.ranges.size(); i++) {
@@ -154,9 +167,102 @@ namespace laser_filters {
       ROS_INFO("Loop finished");
     }
 
+    sensor_msgs::LaserScan bilateralFilterOctreeVoxel(sensor_msgs::LaserScan input_scan) {
+      pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud(new pcl::PointCloud<pcl::PointXYZ>);
+      // Populate point cloud with LaserScan data
+      for(int i = 0; i < input_scan.ranges.size(); i++) {
+        pcl::PointXYZ point;
+        point.x = input_scan.ranges[i] * cos(input_scan.angle_min + input_scan.angle_increment*i);
+        point.y = input_scan.ranges[i] * sin(input_scan.angle_min + input_scan.angle_increment*i);
+        point.z = 0;
+        pointcloud->points.push_back(point);
+      }
+
+      pcl::octree::OctreePointCloudSearch<pcl::PointXYZ> octree(double(0.05));
+      octree.setInputCloud(pointcloud);
+      octree.addPointsFromInputCloud();
+
+      std::vector<int> pointIdxRadiusSearch;
+
+      double distance_function_res, range_function_res;
+
+      sensor_msgs::LaserScan filtered_scan = input_scan;
+      for(std::size_t p = 0 ; p < pointcloud->size() ; p++) {
+        double w, Wp = 0;
+        pointIdxRadiusSearch.clear();
+        if(octree.voxelSearch(pointcloud->at(p), pointIdxRadiusSearch) > 0) {
+          for (std::size_t i = 0; i < pointIdxRadiusSearch.size (); ++i) {
+            double distance = sqrt( pow((pointcloud->at(pointIdxRadiusSearch[i]).x - pointcloud->at(p).x), 2) +
+                                    pow((pointcloud->at(pointIdxRadiusSearch[i]).y - pointcloud->at(p).y), 2));
+            distance_function_res = distance_function(distance);
+            range_function_res = gaussian(distance, _sigmaS);
+            w = distance_function_res * input_scan.ranges[p];
+            filtered_scan.ranges[p] += sqrt( pow((pointcloud->at(pointIdxRadiusSearch[i]).x ), 2)
+                                             + pow((pointcloud->at(pointIdxRadiusSearch[i]).y), 2)) * w;
+            Wp += w;
+          }
+        }
+        filtered_scan.ranges[p] /= Wp;
+      }
+      return filtered_scan;
+
+    }
+
+    sensor_msgs::LaserScan bilateralFilterOctreeNearest(sensor_msgs::LaserScan input_scan) {
+      pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud(new pcl::PointCloud<pcl::PointXYZ>);
+      // Populate point cloud with LaserScan data
+      for(int i = 0; i < input_scan.ranges.size(); i++) {
+        pcl::PointXYZ point;
+        point.x = input_scan.ranges[i] * cos(input_scan.angle_min + input_scan.angle_increment*i);
+        point.y = input_scan.ranges[i] * sin(input_scan.angle_min + input_scan.angle_increment*i);
+        point.z = 0;
+        pointcloud->points.push_back(point);
+      }
+
+      pcl::octree::OctreePointCloudSearch<pcl::PointXYZ> octree(double(0.05));
+      octree.setInputCloud(pointcloud);
+      octree.addPointsFromInputCloud();
+
+      std::vector<int> pointIdxKNearestSearch;
+
+      std::vector<float> pointRadiusSquaredDistance;
+
+      double distance_function_res, range_function_res;
+
+      sensor_msgs::LaserScan filtered_scan = input_scan;
+      for(std::size_t p = 0 ; p < pointcloud->size() ; p++) {
+        double w, Wp = 0;
+        pointIdxKNearestSearch.clear();
+        pointRadiusSquaredDistance.clear();
+        if(octree.nearestKSearch(pointcloud->at(p), _K, pointIdxKNearestSearch, pointRadiusSquaredDistance) > 0) {
+          for (std::size_t i = 0; i < pointIdxKNearestSearch.size (); ++i) {
+            distance_function_res = distance_function(sqrt(pointRadiusSquaredDistance[i]));
+            range_function_res = gaussian(sqrt(pointRadiusSquaredDistance[i]), _sigmaS);
+            w = distance_function_res * input_scan.ranges[p];
+            filtered_scan.ranges[p] += sqrt( pow((pointcloud->at(pointIdxKNearestSearch[i]).x ), 2)
+                                             + pow((pointcloud->at(pointIdxKNearestSearch[i]).y), 2)) * w;
+            Wp += w;
+          }
+        }
+        filtered_scan.ranges[p] /= Wp;
+      }
+      return filtered_scan;
+
+    }
+
     bool update(const sensor_msgs::LaserScan& input_scan, sensor_msgs::LaserScan& output_scan) {
       output_scan = input_scan;
-      output_scan = bilateralFilterOctree(input_scan);
+      if(_filter_type == "Normal") {
+        bilateralFilter(input_scan);
+      } else if(_filter_type == "OctreeRadius") {
+        output_scan = bilateralFilterOctreeRadius(input_scan);
+      } else if(_filter_type == "OctreeVoxel") {
+        output_scan = bilateralFilterOctreeVoxel(input_scan);
+      } else if(_filter_type == "OctreeNearest") {
+        output_scan = bilateralFilterOctreeNearest(input_scan);
+      }
+
+
     }
   };
 };
