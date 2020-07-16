@@ -37,12 +37,8 @@
 #ifndef LASER_SCAN_ANGULAR_BOUNDS_FILTER_H
 #define LASER_SCAN_ANGULAR_BOUNDS_FILTER_H
 
-#include "ros/ros.h"
-
 #include <filters/filter_base.h>
 #include <sensor_msgs/LaserScan.h>
-
-#include <ddynamic_reconfigure/ddynamic_reconfigure.h>
 
 namespace laser_filters
 {
@@ -51,11 +47,9 @@ namespace laser_filters
     public:
       double lower_angle_;
       double upper_angle_;
-      ddynamic_reconfigure::DDynamicReconfigure ddr;
 
       bool configure()
       {
-        ros::NodeHandle nh_("~/AngularBoundsFilter");
         lower_angle_ = 0;
         upper_angle_ = 0;
 
@@ -64,11 +58,6 @@ namespace laser_filters
           return false;
         }
 
-        ddr.registerVariable<double>("Lower_angle", &lower_angle_, "Lower angle of the filter", -3.14, 3.14);
-        ddr.registerVariable<double>("Upper_angle", &upper_angle_, "Upper angle of the filter", -3.14, 3.14);
-        ddr.publishServicesTopics();
-
-        std::cerr << "Callback should be created" << std::endl;
         return true;
       }
 
@@ -130,7 +119,6 @@ namespace laser_filters
         return true;
 
       }
-
   };
 };
 #endif

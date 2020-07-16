@@ -43,8 +43,9 @@
 #include "laser_filters/scan_shadow_detector.h"
 #include <sensor_msgs/LaserScan.h>
 #include <angles/angles.h>
-
-#include <ddynamic_reconfigure/ddynamic_reconfigure.h>
+#include <laser_filters/ScanShadowsFilterConfig.h>
+#include <dynamic_reconfigure/server.h>
+#include <ros/ros.h>
 
 namespace laser_filters
 {
@@ -57,9 +58,13 @@ public:
   double laser_max_range_;        // Used in laser scan projection
   double min_angle_, max_angle_;  // Filter angle threshold
   int window_, neighbors_;
+  bool remove_shadow_start_point_;  // Whether to also remove the start point of the shadow
 
   ScanShadowDetector shadow_detector_;
-  std::shared_ptr<ddynamic_reconfigure::DDynamicReconfigure> ddr;
+
+  std::shared_ptr<dynamic_reconfigure::Server<laser_filters::ScanShadowsFilterConfig>> dyn_server_;
+  boost::recursive_mutex own_mutex_;
+  ScanShadowsFilterConfig param_config;
 
   ////////////////////////////////////////////////////////////////////////////////
   ScanShadowsFilter()
@@ -69,7 +74,11 @@ public:
   /**@b Configure the filter from XML */
   bool configure()
   {
-    ros::NodeHandle nh_("~/ScanShadowFilter");
+    ros::NodeHandle private_nh("~" + getName());
+    dyn_server_.reset(new dynamic_reconfigure::Server<laser_filters::ScanShadowsFilterConfig>(own_mutex_, private_nh));
+    dynamic_reconfigure::Server<laser_filters::ScanShadowsFilterConfig>::CallbackType f;
+    f = boost::bind(&laser_filters::ScanShadowsFilter::reconfigureCB, this, _1, _2);
+    dyn_server_->setCallback(f);
 
     if (!filters::FilterBase<sensor_msgs::LaserScan>::getParam(std::string("min_angle"), min_angle_))
     {
@@ -91,6 +100,9 @@ public:
     {
       ROS_INFO("Error: ShadowsFilter was not given neighbors.\n");
     }
+    remove_shadow_start_point_ = false;  // default value
+    filters::FilterBase<sensor_msgs::LaserScan>::getParam(std::string("remove_shadow_start_point"), remove_shadow_start_point_);
+    ROS_INFO("Remove shadow start point: %s", remove_shadow_start_point_ ? "true" : "false");
 
     if (min_angle_ < 0)
     {
@@ -113,26 +125,30 @@ public:
       max_angle_ = 180.0;
     }
 
-    ddr = std::make_shared<ddynamic_reconfigure::DDynamicReconfigure>(nh_);
-    ddr->registerVariable<double>("Min_angle", min_angle_, boost::bind(&ScanShadowsFilter::reconfigure_min_angle, this, _1), "Minimum angle of shadow filter", 0, 180);
-    ddr->registerVariable<double>("Max_angle", max_angle_, boost::bind(&ScanShadowsFilter::reconfigure_max_angle, this, _1), "Maximum angle of shadow filter", 0, 180);
-    ddr->registerVariable<int>("Neighbors", &neighbors_, "Neighbors of shadow filter", 0, 40);
-    ddr->registerVariable<int>("Window", &window_, "Window of shadow filter", 0, 20);
-    ddr->publishServicesTopics();
-
     shadow_detector_.configure(
         angles::from_degrees(min_angle_),
         angles::from_degrees(max_angle_));
 
+    param_config.min_angle = min_angle_;
+    param_config.max_angle = max_angle_;
+    param_config.window = window_;
+    param_config.neighbors = neighbors_;
+    param_config.remove_shadow_start_point = remove_shadow_start_point_;
+    dyn_server_->updateConfig(param_config);
+
     return true;
   }
 
-  void reconfigure_min_angle(double min_angle) {
-      shadow_detector_.reconfigure_min_angle(min_angle);
-  }
-
-  void reconfigure_max_angle(double max_angle) {
-      shadow_detector_.reconfigure_max_angle(max_angle);
+  void reconfigureCB(ScanShadowsFilterConfig& config, uint32_t level)
+  {
+    min_angle_ = config.min_angle;
+    max_angle_ = config.max_angle;
+    shadow_detector_.configure(
+        angles::from_degrees(min_angle_),
+        angles::from_degrees(max_angle_));
+    neighbors_ = config.neighbors;
+    window_ = config.window;
+    remove_shadow_start_point_ = config.remove_shadow_start_point;
   }
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -150,6 +166,8 @@ public:
    */
   bool update(const sensor_msgs::LaserScan& scan_in, sensor_msgs::LaserScan& scan_out)
   {
+    boost::recursive_mutex::scoped_lock lock(own_mutex_);
+
     // copy across all data first
     scan_out = scan_in;
 
@@ -174,6 +192,10 @@ public:
             {  // delete neighbor if they are farther away (note not self)
               indices_to_delete.insert(index);
             }
+          }
+          if (remove_shadow_start_point_)
+          {
+            indices_to_delete.insert(i);
           }
         }
       }

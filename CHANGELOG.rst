@@ -2,6 +2,47 @@
 Changelog for package laser_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.11 (2020-06-03)
+-------------------
+* Merge pull request `#97 <https://github.com/ros-perception/laser_filters/issues/97>`_ from eurogroep/feat/speckle-filter-for-noise-removal
+* Merge pull request `#96 <https://github.com/ros-perception/laser_filters/issues/96>`_ from eurogroep/feat/intensity-filter-dynamic-reconfigure-and-optionally-override-intensity-values
+  feat(IntensityFilter): Dynamic reconfigure and optionally override intensity
+* Merge pull request `#3 <https://github.com/ros-perception/laser_filters/issues/3>`_ from nlimpert/nlimpert/speckle-filter-radius-outlier-merge
+  Merge distance based speckle filter with RadiusOutlier removal
+* Contributors: Jonathan Binney, Nicolas Limpert, Rein Appeldoorn
+
+1.8.10 (2020-04-07)
+-------------------
+* radius_outlier_filter: new filter for radius based outlier removal
+  Add a new filter to remove measurements that do not have a number of
+  neighbors within a certain range.
+* Contributors: Jonathan Binney, Nicolas Limpert
+
+1.8.9 (2020-04-05)
+------------------
+* Bump CMake version to avoid CMP0048 warning
+* Polygon filter
+* Add dynamic reconfigure for scan shadows filter
+* Parameter to remove shadow start point in scan shadows filter
+* Contributors: Jonathan Binney, Rein Appeldoorn, Yannick_de_Hoop, ahcorde
+
+1.8.8 (2019-11-07)
+------------------
+* Merge pull request `#83 <https://github.com/ros-perception/laser_filters/issues/83>`_ from remco-r/indigo-devel
+  [fix] when high fidelity true added laser_max_range\_ to projection
+* [fix] when high fidelity true added laser_max_range\_ to projection
+* Merge pull request `#79 <https://github.com/ros-perception/laser_filters/issues/79>`_ from Jailander/indigo-devel
+  Adding invert filter parameter to BOX filter
+* Merge pull request `#80 <https://github.com/ros-perception/laser_filters/issues/80>`_ from k-okada/indigo-devel
+  Add scan blob filters
+* add scan blob filters
+* Merge pull request `#72 <https://github.com/ros-perception/laser_filters/issues/72>`_ from ms-iot/windows_port_tests_fix
+  [Windows][indigo] Use ${GTEST_LIBRARIES} for more portable gtest library linkage.
+* Adding invert filter parameter to BOX filter
+* Remove extra changes.
+* windows bring up
+* Contributors: Jonathan Binney, Kei Okada, Remco, Sean Yen, jailander
+
 1.8.7 (2019-06-13)
 ------------------
 * Merge pull request `#77 <https://github.com/ros-perception/laser_filters/issues/77>`_ from bionade24/indigo-devel

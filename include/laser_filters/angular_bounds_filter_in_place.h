@@ -40,9 +40,6 @@
 #include <filters/filter_base.h>
 #include <sensor_msgs/LaserScan.h>
 
-#include <ddynamic_reconfigure/ddynamic_reconfigure.h>
-#include <math.h>
-
 namespace laser_filters
 {
   class LaserScanAngularBoundsFilterInPlace : public filters::FilterBase<sensor_msgs::LaserScan>
@@ -51,25 +48,15 @@ namespace laser_filters
       double lower_angle_;
       double upper_angle_;
 
-      std::shared_ptr<ddynamic_reconfigure::DDynamicReconfigure> ddr;
-
       bool configure()
       {
-        ros::NodeHandle nh_("~/AngularBoundsInPlaceFilter");
         lower_angle_ = 0;
         upper_angle_ = 0;
-
 
         if(!getParam("lower_angle", lower_angle_) || !getParam("upper_angle", upper_angle_)){
           ROS_ERROR("Both the lower_angle and upper_angle parameters must be set to use this filter.");
           return false;
         }
-
-        ddr = std::make_shared<ddynamic_reconfigure::DDynamicReconfigure>(nh_);
-        ddr->registerVariable<double>("Lower_angle", &lower_angle_, "Lower angle of the filter", -3.14, 3.14);
-        ddr->registerVariable<double>("Upper_angle", &upper_angle_, "Upper angle of the filter", -3.14, 3.14);
-        ddr->publishServicesTopics();
-
 
         return true;
       }
@@ -82,29 +69,15 @@ namespace laser_filters
         double current_angle = input_scan.angle_min;
         unsigned int count = 0;
         //loop through the scan and remove ranges at angles between lower_angle_ and upper_angle_
-        if(lower_angle_ < upper_angle_) {
-            for(unsigned int i = 0; i < input_scan.ranges.size(); ++i){
-              if((current_angle > lower_angle_) && (current_angle < upper_angle_)){
-                filtered_scan.ranges[i] = input_scan.range_max + 1.0;
-                if(i < filtered_scan.intensities.size()){
-                  filtered_scan.intensities[i] = 0.0;
-                }
-                count++;
-              }
-              current_angle += input_scan.angle_increment;
+        for(unsigned int i = 0; i < input_scan.ranges.size(); ++i){
+          if((current_angle > lower_angle_) && (current_angle < upper_angle_)){
+            filtered_scan.ranges[i] = input_scan.range_max + 1.0;
+            if(i < filtered_scan.intensities.size()){
+              filtered_scan.intensities[i] = 0.0;
             }
-        } else if (lower_angle_ > upper_angle_) {
-            for(unsigned int i = 0; i < input_scan.ranges.size(); ++i){
-              // Need to add 0.001 to PI for the index 0
-              if(((current_angle > lower_angle_) && (current_angle < M_PI+0.001)) || ((current_angle < upper_angle_) && (current_angle > -M_PI-0.001))){
-                filtered_scan.ranges[i] = input_scan.range_max + 1.0;
-                if(i < filtered_scan.intensities.size()){
-                  filtered_scan.intensities[i] = 0.0;
-                }
-                count++;
-              }
-              current_angle += input_scan.angle_increment;
-            }
+            count++;
+          }
+          current_angle += input_scan.angle_increment;
         }
 
         ROS_DEBUG("Filtered out %u points from the laser scan.", count);
@@ -112,7 +85,6 @@ namespace laser_filters
         return true;
 
       }
-
   };
 };
 #endif
