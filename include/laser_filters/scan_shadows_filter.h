@@ -51,6 +51,14 @@
 #define ROS_INFO(...)
 #endif // !ROS_INFO
 
+#ifndef ROS_ERROR
+#define ROS_ERROR(...)
+#endif // !ROS_ERROR
+
+#ifndef ROS_DEBUG
+#define ROS_DEBUG(...)
+#endif // !ROS_DEBUG
+
 #include <angles/angles.h>
 
 namespace laser_filters{

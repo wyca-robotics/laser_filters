@@ -27,32 +27,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "laser_filters/median_filter.h"
-#include "laser_filters/array_filter.h"
-#include "laser_filters/intensity_filter.h"
-#include "laser_filters/range_filter.h"
-#include "laser_filters/scan_mask_filter.h"
-#include "laser_filters/scan_shadows_filter.h"
-#include "laser_filters/footprint_filter.h"
-#include "laser_filters/interpolation_filter.h"
-#include "laser_filters/angular_bounds_filter.h"
-#include "laser_filters/angular_bounds_filter_in_place.h"
-#include "laser_filters/box_filter.h"
 
-#include <builtin_interfaces/msg/Time.hpp>
+//#include "laser_filters/median_filter.h"
+//#include "laser_filters/array_filter.h"
+//#include "laser_filters/intensity_filter.h"
+//#include "laser_filters/range_filter.h"
+//#include "laser_filters/scan_mask_filter.h"
+#include "laser_filters/scan_shadows_filter.h"
+//#include "laser_filters/footprint_filter.h"
+//#include "laser_filters/interpolation_filter.h"
+//#include "laser_filters/angular_bounds_filter.h"
+//#include "laser_filters/angular_bounds_filter_in_place.h"
+//#include "laser_filters/box_filter.h"
+
+#include <builtin_interfaces/msg/time.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 
 #include "filters/filter_base.h"
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
 
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserMedianFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserArrayFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanIntensityFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanRangeFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanAngularBoundsFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanAngularBoundsFilterInPlace, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanFootprintFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserMedianFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserArrayFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanIntensityFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanRangeFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanAngularBoundsFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanAngularBoundsFilterInPlace, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanFootprintFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
 PLUGINLIB_EXPORT_CLASS(laser_filters::ScanShadowsFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::InterpolationFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanBoxFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanMaskFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::InterpolationFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanBoxFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+//PLUGINLIB_EXPORT_CLASS(laser_filters::LaserScanMaskFilter, filters::FilterBase<sensor_msgs::msg::LaserScan>)

@@ -16,10 +16,14 @@ find_package(message_filters REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(laser_geometry REQUIRED)
 find_package(angles REQUIRED)
-find_package(rostime REQUIRED)
+#find_package(rostime REQUIRED)
+
+#find_package(tinyxml_vendor REQUIRED)
+find_library(TINYXML2_LIBRARY tinyxml2)
+find_package(tinyxml2_vendor CONFIG REQUIRED)
 
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost REQUIRED COMPONENTS system signals thread filesystem)
+find_package(Boost REQUIRED COMPONENTS system  thread filesystem)  #signals
 
 include_directories(include 
   ${pluginlib_INCLUDE_DIRS}
@@ -31,7 +35,7 @@ include_directories(include
   ${tf2_ros_INCLUDE_DIRS}
   ${laser_geometry_INCLUDE_DIRS}
   ${angles_INCLUDE_DIRS}
-  ${rostime_INCLUDE_DIRS}
+  #${rostime_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
 
@@ -45,7 +49,7 @@ link_directories(
   ${tf2_ros_LIBRARY_DIRS}
   ${laser_geometry_LIBRARY_DIRS}
   ${angles_LIBRARY_DIRS}
-  ${rostime_LIBRARY_DIRS}
+  #${rostime_LIBRARY_DIRS}
 )
 
 add_definitions(-DTRANSFORM_LISTENER_NOT_IMPLEMENTED)
@@ -61,7 +65,7 @@ set(${PROJECT_NAME}_LIBRARIES
   ${tf2_ros_LIBRARIES}
   ${laser_geometry_LIBRARIES}
   ${angles_LIBRARIES}
-  ${rostime_LIBRARIES}
+  #${rostime_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
@@ -69,29 +73,30 @@ set(${PROJECT_NAME}_LIBRARIES
 # Build
 ##############################################################################
 
-add_library(pointcloud_filters src/pointcloud_filters.cpp)
-target_link_libraries(pointcloud_filters ${${PROJECT_NAME}_LIBRARIES})
+#add_library(pointcloud_filters src/pointcloud_filters.cpp)
+#target_link_libraries(pointcloud_filters ${${PROJECT_NAME}_LIBRARIES})
 
-add_library(laser_scan_filters src/laser_scan_filters.cpp src/median_filter.cpp src/array_filter.cpp src/box_filter.cpp)
+add_library(laser_scan_filters src/laser_scan_filters.cpp) # src/median_filter.cpp src/array_filter.cpp src/box_filter.cpp)
 target_link_libraries(laser_scan_filters ${${PROJECT_NAME}_LIBRARIES})
 
-add_executable(scan_to_cloud_filter_chain src/scan_to_cloud_filter_chain.cpp)
-target_link_libraries(scan_to_cloud_filter_chain ${${PROJECT_NAME}_LIBRARIES})
+#add_executable(scan_to_cloud_filter_chain src/scan_to_cloud_filter_chain.cpp)
+#target_link_libraries(scan_to_cloud_filter_chain ${${PROJECT_NAME}_LIBRARIES})
 
 add_executable(scan_to_scan_filter_chain src/scan_to_scan_filter_chain.cpp)
-target_link_libraries(scan_to_scan_filter_chain ${${PROJECT_NAME}_LIBRARIES})
+target_link_libraries(scan_to_scan_filter_chain ${${PROJECT_NAME}_LIBRARIES} tinyxml2)
+ament_target_dependencies(scan_to_scan_filter_chain tinyxml2_vendor)
 
-add_executable(generic_laser_filter_node src/generic_laser_filter_node.cpp)
-target_link_libraries(generic_laser_filter_node ${${PROJECT_NAME}_LIBRARIES})
+#add_executable(generic_laser_filter_node src/generic_laser_filter_node.cpp)
+#target_link_libraries(generic_laser_filter_node ${${PROJECT_NAME}_LIBRARIES})
 
 pluginlib_export_plugin_description_file(laser_filters laser_filters_plugins.xml)
 ament_export_include_directories(include)
 ament_export_libraries(
-  pointcloud_filters 
+  #pointcloud_filters
   laser_scan_filters 
-  scan_to_cloud_filter_chain
+  #scan_to_cloud_filter_chain
   scan_to_scan_filter_chain
-  generic_laser_filter_node
+  #generic_laser_filter_node
 )
 ament_package()
 
@@ -99,18 +104,22 @@ ament_package()
 # Install
 ##############################################################################
 
-install(TARGETS pointcloud_filters laser_scan_filters 
-  scan_to_cloud_filter_chain
-  scan_to_scan_filter_chain
-  generic_laser_filter_node
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+#scan_to_cloud_filter_chain
+#pointcloud_filters
+#generic_laser_filter_node
+install(TARGETS laser_scan_filters scan_to_scan_filter_chain
+  EXPORT export_${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
+  #ARCHIVE DESTINATION lib/${PROJECT_NAME}
+  #LIBRARY DESTINATION lib/${PROJECT_NAME}
+  #RUNTIME DESTINATION bin/${PROJECT_NAME}
 )
 
 # Install headers
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include)
+install(DIRECTORY include
+  DESTINATION include/${PROJECT_NAME}
+  FILES_MATCHING PATTERN "*.h"
+)
 
 install(FILES laser_filters_plugins.xml
     DESTINATION share
