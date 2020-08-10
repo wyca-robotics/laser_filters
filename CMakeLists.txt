@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 11)
 ##############################################################################
 
 set(THIS_PACKAGE_ROS_DEPS sensor_msgs roscpp tf filters message_filters
-  laser_geometry pluginlib angles dynamic_reconfigure)
+  laser_geometry pluginlib angles dynamic_reconfigure nodelet)
 
 find_package(catkin REQUIRED COMPONENTS ${THIS_PACKAGE_ROS_DEPS})
 find_package(Boost REQUIRED COMPONENTS system)
@@ -95,4 +95,24 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 install(FILES laser_filters_plugins.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+##############################################################################
+# Nodelet
+##############################################################################
+add_library(laser_filters_nodelet
+    src/scan_to_scan_filter_chain_nodelet.cpp
+    src/scan_to_cloud_filter_chain_nodelet.cpp
+    src/cloud_to_cloud_filter_chain_nodelet.cpp
+)
+target_link_libraries(laser_filters_nodelet
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
+
+add_dependencies(laser_filters_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+
+install(TARGETS laser_filters_nodelet
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
