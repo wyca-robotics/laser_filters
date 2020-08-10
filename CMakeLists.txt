@@ -100,19 +100,19 @@ install(FILES laser_filters_plugins.xml
 ##############################################################################
 # Nodelet
 ##############################################################################
-add_library(laser_filters_nodelet
+add_library(laser_filters
     src/scan_to_scan_filter_chain_nodelet.cpp
     src/scan_to_cloud_filter_chain_nodelet.cpp
     src/cloud_to_cloud_filter_chain_nodelet.cpp
 )
-target_link_libraries(laser_filters_nodelet
+target_link_libraries(laser_filters
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
 )
 
-add_dependencies(laser_filters_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+add_dependencies(laser_filters ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
-install(TARGETS laser_filters_nodelet
+install(TARGETS laser_filters
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
