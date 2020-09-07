@@ -93,7 +93,7 @@ install(TARGETS pointcloud_filters laser_scan_filters
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(FILES laser_filters_plugins.xml
+install(FILES laser_filters_plugins.xml nodelet_plugins.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
