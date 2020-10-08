@@ -71,7 +71,6 @@ public:
   ScanToScanFilterChain(rclcpp::Node::SharedPtr node):
     filter_chain_("sensor_msgs::msg::LaserScan")
   {
-    std::cout<<"in constructor"<<std::endl;
     // Initialisation
     nh_ = node;
     scan_sub_.subscribe(nh_, "scan", rmw_qos_profile_sensor_data);
@@ -80,7 +79,6 @@ public:
     //tf_filter_ = std::make_shared<tf2_ros::MessageFilter<sensor_msgs::msg::LaserScan>>();
 
     // Configure filter chain
-    std::cout<<"get_param filter chain"<<std::endl;
     using_filter_chain_deprecated_ = !nh_->get_parameter("filter_chain", using_filter_chain_deprecated_);
 
     if (using_filter_chain_deprecated_)
@@ -89,7 +87,6 @@ public:
       filter_chain_.configure("scan_filter_chain", nh_->get_node_logging_interface(), nh_->get_node_parameters_interface());
     
     std::string tf_message_filter_target_frame;
-    std::cout<<"get_param tf filter target"<<std::endl;
 
     if (nh_->get_parameter("tf_message_filter_target_frame", tf_message_filter_target_frame)){
       nh_->get_parameter("tf_message_filter_target_frame", tf_message_filter_target_frame);
@@ -109,15 +106,11 @@ public:
       // Pass through if no tf_message_filter_target_frame
       scan_sub_.registerCallback(std::bind(&ScanToScanFilterChain::callback, this, std::placeholders::_1));
     }
-    std::cout<<"new pub"<<std::endl;
-
     
     // Advertise output
     output_pub_ = nh_->create_publisher<sensor_msgs::msg::LaserScan>("scan_filtered", 1000);
 
     // Set up deprecation printout
-    std::cout<<"new timer"<<std::endl;
-
     deprecation_timer_ = nh_->create_wall_timer(std::chrono::seconds(5), std::bind(&ScanToScanFilterChain::deprecation_warn, this));
   }
 
@@ -153,14 +146,9 @@ public:
 
 int main(int argc, char **argv)
 {
-  //rclcpp::Time::init();
-  std::cout<<"in main"<<std::endl;
   rclcpp::init(argc, argv);
-  std::cout<<"init rclcpp"<<std::endl;
   auto nh = rclcpp::Node::make_shared("scan_to_scan_filter_chain");
-  std::cout<<"init node"<<std::endl;
   ScanToScanFilterChain t(nh);
-  std::cout<<"scantoscanfilterchain init"<<std::endl;
 
   rclcpp::WallRate loop_rate(200);
   while (rclcpp::ok()) {
