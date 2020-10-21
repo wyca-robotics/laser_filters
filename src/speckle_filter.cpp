@@ -64,23 +64,11 @@ bool LaserScanSpeckleFilter::configure()
 //  ROS_INFO("bf set cb");
 //  dyn_server_->setCallback(f);
 
-  ROS_INFO_STREAM("Max range difference " << SpeckleFilterConfig::__getDefault__().max_range_difference);
-  ROS_INFO_STREAM("filter_window " << SpeckleFilterConfig::__getDefault__().filter_window);
-  ROS_INFO_STREAM("Max range " << SpeckleFilterConfig::__getDefault__().max_range);
-  ROS_INFO_STREAM("filter_type " << SpeckleFilterConfig::__getDefault__().filter_type);
   getParam("filter_type", config_.filter_type);
   getParam("max_range", config_.max_range);
   getParam("max_range_difference", config_.max_range_difference);
   getParam("filter_window", config_.filter_window);
-  ROS_INFO_STREAM("Max range difference " << config_.max_range_difference);
-  ROS_INFO_STREAM("filter_window " << config_.filter_window);
-  ROS_INFO_STREAM("Max range " << config_.max_range);
-  ROS_INFO_STREAM("filter_type " << config_.filter_type);
 //  dyn_server_->updateConfig(config_);
-  ROS_INFO_STREAM("Max range difference " << config_.max_range_difference);
-  ROS_INFO_STREAM("filter_window " << config_.filter_window);
-  ROS_INFO_STREAM("Max range " << config_.max_range);
-  ROS_INFO_STREAM("filter_type " << config_.filter_type);
   switch (config_.filter_type) {
     case laser_filters::SpeckleFilter_RadiusOutlier:
       if (validator_)
