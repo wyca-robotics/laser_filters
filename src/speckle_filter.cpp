@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Software License Agreement (BSD License)
  *
  *  Robot Operating System code by Eurotec B.V.
@@ -58,16 +58,49 @@ LaserScanSpeckleFilter::~LaserScanSpeckleFilter()
 bool LaserScanSpeckleFilter::configure()
 {
   ros::NodeHandle private_nh("~" + getName());
-  dyn_server_.reset(new dynamic_reconfigure::Server<laser_filters::SpeckleFilterConfig>(own_mutex_, private_nh));
-  dynamic_reconfigure::Server<laser_filters::SpeckleFilterConfig>::CallbackType f;
-  f = boost::bind(&laser_filters::LaserScanSpeckleFilter::reconfigureCB, this, _1, _2);
-  dyn_server_->setCallback(f);
+//  dyn_server_.reset(new dynamic_reconfigure::Server<laser_filters::SpeckleFilterConfig>(own_mutex_, private_nh));
+//  dynamic_reconfigure::Server<laser_filters::SpeckleFilterConfig>::CallbackType f;
+//  f = boost::bind(&laser_filters::LaserScanSpeckleFilter::reconfigureCB, this, _1, _2);
+//  ROS_INFO("bf set cb");
+//  dyn_server_->setCallback(f);
 
+  ROS_INFO_STREAM("Max range difference " << SpeckleFilterConfig::__getDefault__().max_range_difference);
+  ROS_INFO_STREAM("filter_window " << SpeckleFilterConfig::__getDefault__().filter_window);
+  ROS_INFO_STREAM("Max range " << SpeckleFilterConfig::__getDefault__().max_range);
+  ROS_INFO_STREAM("filter_type " << SpeckleFilterConfig::__getDefault__().filter_type);
   getParam("filter_type", config_.filter_type);
   getParam("max_range", config_.max_range);
   getParam("max_range_difference", config_.max_range_difference);
   getParam("filter_window", config_.filter_window);
-  dyn_server_->updateConfig(config_);
+  ROS_INFO_STREAM("Max range difference " << config_.max_range_difference);
+  ROS_INFO_STREAM("filter_window " << config_.filter_window);
+  ROS_INFO_STREAM("Max range " << config_.max_range);
+  ROS_INFO_STREAM("filter_type " << config_.filter_type);
+//  dyn_server_->updateConfig(config_);
+  ROS_INFO_STREAM("Max range difference " << config_.max_range_difference);
+  ROS_INFO_STREAM("filter_window " << config_.filter_window);
+  ROS_INFO_STREAM("Max range " << config_.max_range);
+  ROS_INFO_STREAM("filter_type " << config_.filter_type);
+  switch (config_.filter_type) {
+    case laser_filters::SpeckleFilter_RadiusOutlier:
+      if (validator_)
+      {
+        delete validator_;
+      }
+      validator_ = new laser_filters::RadiusOutlierWindowValidator();
+      break;
+
+    case laser_filters::SpeckleFilter_Distance:
+      if (validator_)
+      {
+        delete validator_;
+      }
+      validator_ = new laser_filters::DistanceWindowValidator();
+      break;
+
+    default:
+      break;
+  }
   return true;
 }
 
