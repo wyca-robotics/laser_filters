@@ -36,7 +36,7 @@
 #define POINT_CLOUD_FOOTPRINT_FILTER_H
 /**
 \author Tully Foote
-@b ScanFootprintFilter takes input scans and corrects for footprint angle assuming a flat target.  
+@b ScanFootprintFilter takes input scans and corrects for footprint angle assuming a flat target.
 This is useful for ground plane extraction
 
 **/
@@ -44,10 +44,10 @@ This is useful for ground plane extraction
 #include "laser_geometry/laser_geometry.hpp"
 #include "filters/filter_base.hpp"
 #include "tf2_ros/transform_listener.h"
+#include "tf2_ros/create_timer_ros.h"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "sensor_msgs/point_cloud2_iterator.hpp"
-#include "pcl_ros/transforms.hpp"
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 namespace laser_filters
@@ -58,6 +58,10 @@ class PointCloudFootprintFilter : public filters::FilterBase<sensor_msgs::msg::P
 public:
   PointCloudFootprintFilter() : rclcpp_lifecycle::LifecycleNode("point_cloud_footprint_filter"), buffer_(get_clock()), tf_(buffer_)
   {
+    auto timer_interface = std::make_shared<tf2_ros::CreateTimerROS>(
+       get_node_base_interface(),
+       get_node_timers_interface());
+     buffer_.setCreateTimerInterface(timer_interface);
     RCLCPP_WARN(get_logger(), "PointCloudFootprintFilter has been deprecated.  Please use PR2PointCloudFootprintFilter instead.\n");
   }
 
@@ -85,15 +89,23 @@ public:
     }
     sensor_msgs::msg::PointCloud2 laser_cloud;
 
+    geometry_msgs::msg::TransformStamped tf;
+
+    if(!buffer_._frameExists("base_link")) {
+    RCLCPP_ERROR(get_logger(), "Frame base_link does not exist");
+    }
+
     try
     {
-      pcl_ros::transformPointCloud("base_link", input_scan, laser_cloud, buffer_);
+      tf = buffer_.lookupTransform("base_link", input_scan.header.frame_id, rclcpp::Time());
     }
     catch (tf2::TransformException &ex)
     {
       RCLCPP_ERROR(get_logger(), "Transform unavailable %s", ex.what());
       return false;
     }
+
+    tf2::doTransform(input_scan, laser_cloud, tf);
 
     filtered_scan.header = laser_cloud.header;
     filtered_scan.height = 1;
