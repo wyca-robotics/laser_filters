@@ -109,7 +109,7 @@ TEST(ScanToScanFilterChain, IntensityFilter)
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(node->now());
+  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
   expect_ranges_eq(msg_out.ranges, expected_msg.ranges);
@@ -132,7 +132,7 @@ TEST(ScanToScanFilterChain, InterpFilter)
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(node->now());
+  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
   
@@ -159,7 +159,7 @@ TEST(ScanToScanFilterChain, ShadowFilter)
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(node->now());
+  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
 
@@ -183,14 +183,14 @@ TEST(ScanToScanFilterChain, ArrayFilter)
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(node->now());
+  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
   float temp2[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
   std::vector<float> v2 (temp2, temp2 + sizeof(temp2) / sizeof(float));
   msg_in.ranges = v2;
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
-  msg_in = gen_msg(node->now());
+  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
   
   for( int i=0; i<10; i++){
@@ -217,7 +217,7 @@ TEST(ScanToScanFilterChain, MaskFilter)
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(node->now());
+  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
 
