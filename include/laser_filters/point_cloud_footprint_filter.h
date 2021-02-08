@@ -44,6 +44,7 @@ This is useful for ground plane extraction
 #include "laser_geometry/laser_geometry.hpp"
 #include "filters/filter_base.hpp"
 #include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "geometry_msgs/msg/point32.hpp"
 #include "sensor_msgs/point_cloud2_iterator.hpp"
