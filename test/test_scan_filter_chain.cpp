@@ -104,12 +104,14 @@ TEST(ScanToScanFilterChain, IntensityFilter)
 
   rclcpp::Node::SharedPtr node =
       std::make_shared<rclcpp::Node>("intensity_filter_chain");
+  rclcpp::Clock::SharedPtr ros_clock =
+      std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
   EXPECT_TRUE(filter_chain_.configure(
       "",
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
+  msg_in = gen_msg(ros_clock->now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
   expect_ranges_eq(msg_out.ranges, expected_msg.ranges);
@@ -127,12 +129,14 @@ TEST(ScanToScanFilterChain, InterpFilter)
 
   rclcpp::Node::SharedPtr node =
       std::make_shared<rclcpp::Node>("interp_filter_chain");
+  rclcpp::Clock::SharedPtr ros_clock =
+      std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
   EXPECT_TRUE(filter_chain_.configure(
       "",
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
+  msg_in = gen_msg(ros_clock->now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
   
@@ -154,12 +158,14 @@ TEST(ScanToScanFilterChain, ShadowFilter)
 
   rclcpp::Node::SharedPtr node =
       std::make_shared<rclcpp::Node>("shadow_filter_chain");
+  rclcpp::Clock::SharedPtr ros_clock =
+      std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
   EXPECT_TRUE(filter_chain_.configure(
       "",
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
+  msg_in = gen_msg(ros_clock->now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
 
@@ -178,19 +184,21 @@ TEST(ScanToScanFilterChain, ArrayFilter)
 
   rclcpp::Node::SharedPtr node =
       std::make_shared<rclcpp::Node>("array_filter_chain");
+  rclcpp::Clock::SharedPtr ros_clock =
+      std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
   EXPECT_TRUE(filter_chain_.configure(
       "",
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
+  msg_in = gen_msg(ros_clock->now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
   float temp2[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
   std::vector<float> v2 (temp2, temp2 + sizeof(temp2) / sizeof(float));
   msg_in.ranges = v2;
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
-  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
+  msg_in = gen_msg(ros_clock->now());
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
   
   for( int i=0; i<10; i++){
@@ -212,12 +220,14 @@ TEST(ScanToScanFilterChain, MaskFilter)
 
   rclcpp::Node::SharedPtr node =
       std::make_shared<rclcpp::Node>("mask_filter_chain");
+  rclcpp::Clock::SharedPtr ros_clock =
+      std::make_shared<rclcpp::Clock>(RCL_ROS_TIME);
   EXPECT_TRUE(filter_chain_.configure(
       "",
       node->get_node_logging_interface(),
       node->get_node_parameters_interface()));
 
-  msg_in = gen_msg(rclcpp::Clock(RCL_ROS_TIME).now());
+  msg_in = gen_msg(ros_clock->now());
 
   EXPECT_TRUE(filter_chain_.update(msg_in, msg_out));
 
