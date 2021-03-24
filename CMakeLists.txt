@@ -34,7 +34,7 @@ ament_auto_package(INSTALL_TO_SHARE examples)
 ##############################################################################
 # Test
 ##############################################################################
-
+set(BUILD_TESTING false)
 if(BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)
     set(TEST_NAME test_scan_filter_chain)
