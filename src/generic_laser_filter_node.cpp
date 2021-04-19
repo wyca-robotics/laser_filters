@@ -119,11 +119,13 @@ int main(int argc, char **argv)
   rclcpp::init(argc, argv);
   auto nh = rclcpp::Node::make_shared("scan_filter_node");
   GenericLaserScanFilterNode t(nh);
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(nh);
 
   rclcpp::WallRate loop_rate(200);
   while (rclcpp::ok()) {
 
-    rclcpp::spin_some(nh);
+    executor.spin_some();
     loop_rate.sleep();
 
   }
